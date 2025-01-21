@@ -1,0 +1,116 @@
+#! /usr/bin/env python3
+#
+# Copyright (c) 2010 Ryan Armstrong
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+import os, sys, random
+
+
+class song:
+	""" 
+	Class to store song information. Can contain the EXTINF line
+	and the file name (both assume the newline character is included). 
+	Can then re-combine 
+	"""
+	def __init__(self, extinf, filename):
+		self.extinf = extinf;
+		self.filename = filename;
+
+	def listing(self):
+		""" Creates a M3U entry for this song """
+		if len(self.extinf) > 0:
+			return "{0}{1}".format(self.extinf, self.filename)
+		else:
+			return self.filename
+
+
+def loadPlaylist(filename):
+	""" Loads the specified playlist in M3U format into a dictionary of
+	'Albums' (really directories), and songs. """
+	
+	playlistfile = open(filename, 'r')
+	extinf = ""
+	albumlist = dict()
+	
+	for line in playlistfile:
+		
+		if line.upper().startswith("#EXTM3U"):
+			# Ignore header line
+			pass
+		
+		elif line.upper().startswith("#EXTINF"):
+			# Remember Extinf entries
+			extinf = line
+			
+		elif len(line.strip()) > 0:
+			# All other non-blank lines are songs
+			filename = line
+			(filedir, fileonly) = os.path.split(filename)
+			
+			thissong = song(extinf, filename)
+			
+			if filedir in albumlist:
+				songlist = albumlist[filedir]
+				songlist.append(thissong)
+			else:
+				songlist = [ thissong ]
+				albumlist[filedir] = songlist
+				
+			extinf = ""
+	
+	return albumlist
+
+def shuffleAndSave(filename, albumlist):
+	""" Shuffles the specified dictionary of albums, then
+	writes it to the specified file in M3U format """
+
+	# Shuffle by album
+	albums = list(albumlist.keys())
+	random.seed()
+	random.shuffle(albums)
+	
+	# Generate the output playlist
+	playlistoutput = open(playlistoutputname, 'w')
+	
+	playlistoutput.write('#EXTM3U\n')
+
+	for album in albums:
+		for mysong in albumlist[album]:
+			playlistoutput.write( mysong.listing() )
+
+	playlistoutput.close()
+
+
+# "Main" Program start:
+if len(sys.argv) > 1:
+	
+	for playlistname in sys.argv[1:]:
+
+		# Load the old playlist
+		albumlist = loadPlaylist(playlistname)
+
+		# Figure out our output name, then shuffle and write the new one
+		(plbase, plext) = os.path.splitext(playlistname)
+		playlistoutputname = "{0}_shuffled{1}".format(plbase, plext)
+		shuffleAndSave(playlistoutputname, albumlist)
+
+else:
+	sys.stdout.write('Please specify an m3u playlist to shuffle.\n\n')
+	sys.stdout.write('E.g.:  python ShufflePlaylistByAlbum.py bestmusic.m3u\n')

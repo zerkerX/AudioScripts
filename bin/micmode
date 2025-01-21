@@ -1,0 +1,5 @@
+#!/bin/sh
+# Set pulse input source and volume for mic use
+SOURCENAME=alsa_input.pci-0000_00_1f.3.analog-stereo
+pactl set-source-port $SOURCENAME analog-input-rear-mic
+pactl set-source-volume $SOURCENAME 100%

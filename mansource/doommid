@@ -1,0 +1,17 @@
+NAME
+  doommid - Plays a Doom midi file
+SYNOPSIS
+  doommid [file]...
+DESCRIPTION
+  doommid is a tool designed to be specified as the midi playback device
+  for chocolate doom.
+  doommid plays the specified midi file using pmidi(1), using the amidi(1)
+  tool to first reset the midi device, and killall(1) to terminate any
+  existing midi playback. These are required to work around quirky
+  midi playback issues with Chocolate Doom.
+  
+  Presently, the midi device is hardcoded inside the script.
+SEE ALSO
+  pmidi(1), amidi(1), killall(1)
+AUTHOR
+  Ryan Armstrong <software@zerker.ca>

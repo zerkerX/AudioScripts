@@ -1,0 +1,4 @@
+#!/bin/sh
+killall pmidi
+amidi -p hw:2,0,0 -S "f07e7f0901f7"
+pmidi -p24:0 $1

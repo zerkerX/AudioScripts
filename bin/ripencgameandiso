@@ -1,0 +1,8 @@
+#!/bin/sh
+if [ ! -d backup ]; then
+    mkdir backup
+fi
+cdparanoia -B 2-
+rename "s/\.cdda\./\.cdda$1\./" *.wav
+oggenc -q 7 *.wav && mv *.wav backup
+dd if=/dev/sr0 of=image.iso

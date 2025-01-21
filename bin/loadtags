@@ -1,0 +1,105 @@
+#! /usr/bin/env python3
+import sys
+import subprocess
+import re
+import shutil
+import os
+from glob import glob
+from operator import itemgetter
+
+NAMECLEANUP = str.maketrans({
+    ':':'-', '/':'_', '\\':'_', '?':'_', '*':'+', 
+    })
+
+if not os.path.exists('template.txt'):
+    with open('template.txt', 'w') as templatefile:
+        templatefile.write("""Album=Xenoblade OST
+Artist=Yoko Shimomura, ACE+, Manami Kiyota, Yasunori Mitsuda
+Genre=Game Soundtrack
+COMPOSER=Yoko Shimomura, ACE+, Manami Kiyota, Yasunori Mitsuda
+DATE=2010
+""")
+    
+    with open('tracks.txt', 'w') as tracklist:
+        tracklist.write("""Track 1 name
+Track 2 name
+Track 3 name
+etc.
+""")
+
+    sys.stdout.write("Generated Sample Configuration files.\n");
+
+else:
+    with open('template.txt', 'r') as templatefile:
+        template = templatefile.read()
+    
+    with open('tracks.txt', 'r') as tracklist:
+        tracks = []
+        for line in tracklist:
+            if len(line.strip()) > 0:
+                tracks.append(line.strip())
+
+    tracknums = range(1, len(tracks)+1)
+    discs = [1]*len(tracks)
+    files = glob('*.ogg')
+    files.extend( glob('*.flac') )
+    files.sort()
+
+    fileformat='ogg'
+    if files[0].endswith('flac'):
+        fileformat='flac'
+
+    totaltracks = dict()
+    disctotal = 1
+    totaltracks = [0] * 9; #Support up to 9 CD compilations
+
+    for filenum, filename in enumerate(files):
+        #namematch = re.match(r'disc([0-9])track([0-9]{2}).(ogg|flac)', filename)
+        namematch = re.match(r'track([0-9]{2})\.cdda([0-9])\.(ogg|flac)', filename)
+        if namematch:
+            tracknum = int(namematch.group(1))
+            discnum = int(namematch.group(2))
+            tracknums[filenum] = tracknum
+            discs[filenum] = discnum
+            disctotal = max(discnum, disctotal)
+            fileformat = namematch.group(3)
+
+            if discnum in totaltracks:
+                totaltracks[discnum] = max(totaltracks[discnum], tracknum)
+            else:
+                totaltracks[discnum] = tracknum
+
+    if not totaltracks[1]:
+        totaltracks[1] = len(tracks)
+
+
+    for ((tracknum, discnum, filename), trackname) in zip(sorted(
+            zip(tracknums, discs, files), key=itemgetter(1, 0) ), tracks) :
+        # Preserve existing comments (e.g. replay gain?)
+        if fileformat=='ogg':
+            subprocess.call(['vorbiscomment', '-l', filename, '-c', 'comments.txt'])
+        else:
+            subprocess.call(['metaflac', '--export-tags-to=comments.txt', filename])
+        
+        with open('comments.txt', 'a') as commentfile:
+            commentfile.write(template)
+            commentfile.write('''TITLE={}
+TRACKNUMBER={}
+TRACKTOTAL={}
+DISCNUMBER={}
+DISCTOTAL={}
+'''.format(trackname, tracknum, totaltracks[discnum], discnum, disctotal))
+
+        resultname = "{:02} {}.{}".format(tracknum, 
+                trackname.translate(NAMECLEANUP), fileformat)
+        if disctotal > 1:
+            resultname = str(discnum) + "-" + resultname
+
+        print('{} : {} {}/{} {}/{}\t > {}'.format(filename, trackname, tracknum, totaltracks[discnum],
+            discnum, disctotal, resultname))
+
+        if fileformat=='ogg':
+            subprocess.call(['vorbiscomment', '-w', filename, '-c', 'comments.txt'])
+        else:
+            subprocess.call(['metaflac', '--import-tags-from=comments.txt', filename])
+        shutil.move(filename, resultname)

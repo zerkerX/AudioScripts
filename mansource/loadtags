@@ -1,0 +1,41 @@
+NAME
+  loadtags - loads tags into freshly-ripped audio files
+SYNOPSIS
+  loadtags
+DESCRIPTION
+  loadtags will update the tags for all ogg/flac files in the current
+  directory based on a pair of template files: template.txt and 
+  tracks.txt, which must exist in the same folder. All filenames
+  are expected to conform to the conventions of the rip* utilities
+  (e.g. ripencflac(1)). Track and disc numbers will be extracted from
+  the filename if it matches this convention.
+  
+  template.txt contains all desired tags to be included in every file
+  in the current folder. This will typically contain album name, artist
+  and the like. The following is an example file:
+  
+	Album=Xenoblade OST
+	Artist=Yoko Shimomura, ACE+, Manami Kiyota, Yasunori Mitsuda
+	Genre=Game Soundtrack
+	COMPOSER=Yoko Shimomura, ACE+, Manami Kiyota, Yasunori Mitsuda
+	DATE=2010
+
+  tracks.txt contains a listing of all track names, with each subsequent
+  track (even across multiple discs) on its own line. The following a 
+  subset of the same example:
+  
+	Main Theme
+	Prologue A
+	Prologue B
+	Daily Life
+	Memories
+	Thoughts to a Friend
+	Monado Reacts
+	Crisis
+	Confrontation with the Enemy
+	Sorrow
+ 
+SEE ALSO
+  ripencflac(1), ripencgameandiso(1), ripencgame(1), ripencgameflac(1)
+AUTHOR
+  Ryan Armstrong <software@zerker.ca>

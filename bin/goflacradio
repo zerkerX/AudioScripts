@@ -1,0 +1,17 @@
+#!/bin/sh
+SAVEIFS=$IFS
+IFS="
+"
+for x in `ls *.flac`
+do
+    y=${x%\.*}
+    metaflac --export-picture-to="$y.jpg" "$x"
+done
+metaflac --remove --block-type=PICTURE *.flac
+for x in `ls *.flac`
+do
+    y=${x%\.*}
+    metaflac --add-replay-gain "$x"
+done
+
+IFS=$SAVEIFS

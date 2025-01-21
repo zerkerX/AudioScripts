@@ -1,0 +1,7 @@
+#!/bin/sh
+if [ ! -d backup ]; then
+    mkdir backup
+fi
+cdparanoia -B
+rename "s/\.cdda\./\.cdda$1\./" *.wav
+flac --replay-gain *.wav && mv *.wav backup

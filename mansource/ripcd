@@ -1,0 +1,12 @@
+NAME
+  ripcd - rips a given CD as bin/cue
+SYNOPSIS
+  ripcd [outfile]
+DESCRIPTION
+  ripcd rips the currently-inserted CD-ROM/DVD-ROM/Bluray disc as
+  a .bin/.cue file using the provided filename to name the output.
+  This is performed using the cdrdao(1) and toc2cue(1) utilities.
+SEE ALSO
+  cdrdao(1), toc2cue(1)
+AUTHOR
+  Ryan Armstrong <software@zerker.ca>

@@ -1,0 +1,17 @@
+NAME
+  ripencflac - rips and encodes audio tracks from a CD as FLAC
+SYNOPSIS
+  ripencflac [discnumber]
+DESCRIPTION
+  ripencflac rips the currently-inserted audio CD, then encodes as a 
+  series of .flac files. If discnumber is provided, it is used to format
+  the result filename. Ripping is performed by the cdparanoia(1) tool,
+  renamed by rename(1), then encoded by flac(1).
+  
+  The filename format will be recognized by the loadtags(1) utility,
+  which can be used to load metadata after the operation completes.
+SEE ALSO
+  cdparanoia(1), rename(1), flac(1), loadtags(1)
+  
+AUTHOR
+  Ryan Armstrong <software@zerker.ca>

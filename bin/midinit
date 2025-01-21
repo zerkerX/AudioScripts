@@ -1,0 +1,16 @@
+#!/bin/sh
+# Extract port numbers from aconnect output
+PORTS=`aconnect -o | cut -f 2 -d ' ' | tr '\n' ' '`
+
+# Convert each port to a variable, adding zero after the colon
+PORT1=`echo $PORTS | cut -f 1 -d ' '`0
+PORT2=`echo $PORTS | cut -f 2 -d ' '`0
+
+# Connect the first two ports
+aconnect $PORT1 $PORT2
+pactl load-module module-loopback 
+
+# Set pulse input source and volume
+SOURCENAME=alsa_input.pci-0000_00_1f.3.analog-stereo
+pactl set-source-port $SOURCENAME analog-input-linein
+pactl set-source-volume $SOURCENAME 20%

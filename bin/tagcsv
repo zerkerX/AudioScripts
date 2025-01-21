@@ -1,0 +1,103 @@
+#! /usr/bin/env python3
+import subprocess
+import os
+import csv
+import pdb
+from argparse import ArgumentParser
+
+class TagDatabase:
+    def __init__(self, inputfile=None, searchpath=None):
+        self.fields = ['Audio Filename']
+        self.values = []
+        
+        if inputfile:
+            self.load_csv(inputfile)
+        elif searchpath:
+            self.search_files(searchpath)
+
+    
+    def load_comments(self, filename, audiofilename):
+        valuerow = {'Audio Filename' : audiofilename}
+        with open(filename) as infile:
+            for line in infile:
+                field, equals, value = line.strip().partition('=')
+                field = field.upper()
+                if field not in self.fields:
+                    self.fields.append(field)
+                valuerow[field] = value
+        
+        self.values.append(valuerow)
+
+                    
+    def search_files(self, filepath):
+        for filename in sorted(os.listdir(filepath)):
+            name, ext = os.path.splitext(filename)
+            fullpath = os.path.join(filepath, filename)
+            
+            if ext.lower() == '.ogg':
+                subprocess.call(['vorbiscomment', '-l', fullpath, '-c', 'comments.txt'])
+                self.load_comments('comments.txt', filename)
+            elif ext.lower() == '.flac':
+                subprocess.call(['metaflac', '--export-tags-to=comments.txt', fullpath])
+                self.load_comments('comments.txt', filename)
+                
+        os.remove('comments.txt')
+
+        
+    def load_csv(self, csvpath):
+        with open(csvpath, newline='') as infile:
+            csvfile = csv.reader(infile)
+            self.fields = next(csvfile)
+            for row in csvfile:
+                valuerow = {}
+                for idx, field in enumerate(self.fields):
+                    if row[idx]:
+                        valuerow[field] = row[idx]
+                self.values.append(valuerow)
+        
+
+    def apply_tags(self, filepath):
+        for row in self.values:
+            name, ext = os.path.splitext(row['Audio Filename'])
+            fullpath = os.path.join(filepath, row['Audio Filename'])
+            
+            with open('comments.txt', 'w') as outfile:
+                for field in self.fields:
+                    if field != 'Audio Filename' and field in row:
+                        outfile.write('{}={}\n'.format(field, row[field]))
+        
+            # Apply to the audio file now
+            if ext.lower() == '.ogg':
+                subprocess.call(['vorbiscomment', '-w', fullpath, '-c', 'comments.txt'])
+            elif ext.lower() == '.flac':
+                subprocess.call(['metaflac', '--remove-all-tags', '--import-tags-from=comments.txt', fullpath])
+        
+            os.remove('comments.txt')
+
+
+    def save_csv(self, csvpath):
+        with open(csvpath, 'w', newline='') as outfile:
+            csvfile = csv.writer(outfile)
+            csvfile.writerow(self.fields)
+            for row in self.values:
+                outrow = [(row[field] if field in row else '') for field in self.fields]
+                csvfile.writerow(outrow)
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser(description='Saves ogg or flac tags to a CSV or loads tags from CSV')
+    parser.add_argument('-o', dest='outfilename',
+                       default='tags.csv',
+                       help='Output gallery filename')
+    parser.add_argument('--load', action='store_true',
+                       help='Loads tags back from csv. If not specified, tags are saved instead.')
+    parser.add_argument('folder', default='.', nargs='?',
+                       help='Folder to search for audio files or to apply tags to.')
+
+    args = parser.parse_args()
+    if args.load:
+        db = TagDatabase(inputfile = args.outfilename)
+        db.apply_tags(args.folder)
+    else:
+        db = TagDatabase(searchpath = args.folder)
+        db.save_csv(args.outfilename)

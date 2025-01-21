@@ -1,0 +1,18 @@
+#!/bin/sh
+outformat="flac"
+SAVEIFS=$IFS
+IFS="
+"
+EXTS="m4a
+M4A
+APE
+ape
+wav
+WAV"
+for EXT in $EXTS
+do
+    flac --replay-gain *.$EXT && trash *.$EXT
+done
+
+IFS=$SAVEIFS
+metaflac --remove --block-type=PICTURE *.flac

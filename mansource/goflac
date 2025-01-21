@@ -1,0 +1,12 @@
+NAME
+  goflac - performs replay gain analysis and removes cover art from flac files
+SYNOPSIS
+  goflac
+DESCRIPTION
+  goflac uses the metaflac(1) utility to apply replay gain for 
+  every .flac file in the current folder and remove any embedded cover 
+  art. All tracks are treated as a single album for replaygain analysis.
+SEE ALSO
+  metaflac(1)
+AUTHOR
+  Ryan Armstrong <software@zerker.ca>

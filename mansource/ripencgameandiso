@@ -1,0 +1,19 @@
+NAME
+  ripencgameandiso - rips game audio as OGG and rips track 1 as ISO
+SYNOPSIS
+  ripencgameandiso [discnumber]
+DESCRIPTION
+  ripencgameandiso rips the currently-inserted game CD (e.g. tracks 2+), 
+  then encodes as a series of .ogg files. Also rips track 1 as an ISO 
+  file. If discnumber is provided, it is used to format
+  the result filename. Ripping is performed by the cdparanoia(1) 
+  and dd(1) tools,
+  renamed by rename(1), then encoded by oggenc(1).
+  
+  The filename format will be recognized by the loadtags(1) utility,
+  which can be used to load metadata after the operation completes.
+SEE ALSO
+  cdparanoia(1), dd(1), rename(1), oggenc(1), loadtags(1)
+  
+AUTHOR
+  Ryan Armstrong <software@zerker.ca>
