@@ -7,19 +7,50 @@ import os
 from glob import glob
 from operator import itemgetter
 
+try:
+    import cdio
+    import pycdio
+    cdio_available = True
+except:
+    cdio_available = False
+
 NAMECLEANUP = str.maketrans({
     ':':'-', '/':'_', '\\':'_', '?':'_', '*':'+', 
     })
 
-if not os.path.exists('template.txt'):
+
+
+def write_template():
     with open('template.txt', 'w') as templatefile:
-        templatefile.write("""Album=Xenoblade OST
+        successful = False
+        if cdio_available:
+            FIELDS = [
+                    (pycdio.CDTEXT_ARRANGER, "Arranger"),
+                    (pycdio.CDTEXT_COMPOSER, "Composer"),
+                    (pycdio.CDTEXT_FIELD_SONGWRITER, "Author"),
+                    (pycdio.CDTEXT_GENRE, "Genre"),
+                    (pycdio.CDTEXT_PERFORMER, "Artist")
+                ]
+            dev = cdio.Device(driver_id=pycdio.DRIVER_UNKNOWN)
+            cdtext = dev.get_cdtext()
+            title = cdtext.get(pycdio.CDTEXT_FIELD_TITLE, 0)
+            if title is not None:
+                templatefile.write(f"Album={title}\n")
+                for fid, tag in FIELDS:
+                    value = cdtext.get(fid, 0)
+                    if value:
+                        templatefile.write(f"{tag}={value}\n")
+                successful = True
+        
+        if not successful:
+            templatefile.write("""Album=Xenoblade OST
 Artist=Yoko Shimomura, ACE+, Manami Kiyota, Yasunori Mitsuda
 Genre=Game Soundtrack
 COMPOSER=Yoko Shimomura, ACE+, Manami Kiyota, Yasunori Mitsuda
 DATE=2010
 """)
-    
+
+def write_tracks():
     with open('tracks.txt', 'w') as tracklist:
         tracklist.write("""Track 1 name
 Track 2 name
@@ -27,8 +58,14 @@ Track 3 name
 etc.
 """)
 
+def write_defaults():
+    write_template()
+    write_tracks()
     sys.stdout.write("Generated Sample Configuration files.\n");
 
+
+if not os.path.exists('template.txt'):
+    write_defaults()
 else:
     with open('template.txt', 'r') as templatefile:
         template = templatefile.read()
