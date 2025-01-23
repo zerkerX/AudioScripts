@@ -17,8 +17,8 @@ DESCRIPTION
 	Album=Xenoblade OST
 	Artist=Yoko Shimomura, ACE+, Manami Kiyota, Yasunori Mitsuda
 	Genre=Game Soundtrack
-	COMPOSER=Yoko Shimomura, ACE+, Manami Kiyota, Yasunori Mitsuda
-	DATE=2010
+	Composer=Yoko Shimomura, ACE+, Manami Kiyota, Yasunori Mitsuda
+	Date=2010
 
   tracks.txt contains a listing of all track names, with each subsequent
   track (even across multiple discs) on its own line. The following a 
@@ -34,7 +34,11 @@ DESCRIPTION
 	Crisis
 	Confrontation with the Enemy
 	Sorrow
- 
+
+  If run without these files, it will create initial template versions of them.
+  If the pycdio package is installed, it will also read the number of tracks
+  from the CD and attempt to read any CD-Text, if present.
+
 SEE ALSO
   ripencflac(1), ripencgameandiso(1), ripencgame(1), ripencgameflac(1)
 AUTHOR
