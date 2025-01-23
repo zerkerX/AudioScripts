@@ -10,20 +10,20 @@ from operator import itemgetter
 try:
     import cdio
     import pycdio
-    cdio_available = True
+    device = cdio.Device(driver_id=pycdio.DRIVER_UNKNOWN)
+    cdtext = device.get_cdtext()
 except:
-    cdio_available = False
+    cdtext = None
+    device = None
 
 NAMECLEANUP = str.maketrans({
     ':':'-', '/':'_', '\\':'_', '?':'_', '*':'+', 
     })
 
-
-
 def write_template():
     with open('template.txt', 'w') as templatefile:
         successful = False
-        if cdio_available:
+        if cdtext:
             FIELDS = [
                     (pycdio.CDTEXT_ARRANGER, "Arranger"),
                     (pycdio.CDTEXT_COMPOSER, "Composer"),
@@ -31,8 +31,7 @@ def write_template():
                     (pycdio.CDTEXT_GENRE, "Genre"),
                     (pycdio.CDTEXT_PERFORMER, "Artist")
                 ]
-            dev = cdio.Device(driver_id=pycdio.DRIVER_UNKNOWN)
-            cdtext = dev.get_cdtext()
+            
             title = cdtext.get(pycdio.CDTEXT_FIELD_TITLE, 0)
             if title is not None:
                 templatefile.write(f"Album={title}\n")
@@ -46,13 +45,23 @@ def write_template():
             templatefile.write("""Album=Xenoblade OST
 Artist=Yoko Shimomura, ACE+, Manami Kiyota, Yasunori Mitsuda
 Genre=Game Soundtrack
-COMPOSER=Yoko Shimomura, ACE+, Manami Kiyota, Yasunori Mitsuda
-DATE=2010
+Composer=Yoko Shimomura, ACE+, Manami Kiyota, Yasunori Mitsuda
+Date=2010
 """)
 
 def write_tracks():
     with open('tracks.txt', 'w') as tracklist:
-        tracklist.write("""Track 1 name
+        if device:
+            tracks = device.get_num_tracks()
+            first_track = pycdio.get_first_track_num(device.cd)
+            
+            for track in range(first_track, tracks + first_track):
+                if cdtext and cdtext.get(pycdio.CDTEXT_FIELD_TITLE, track):
+                    tracklist.write(f"{cdtext.get(pycdio.CDTEXT_FIELD_TITLE, track)}\n")
+                else:
+                    tracklist.write(f"Track {track} name\n")
+        else:
+            tracklist.write("""Track 1 name
 Track 2 name
 Track 3 name
 etc.
