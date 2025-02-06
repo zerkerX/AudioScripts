@@ -2,6 +2,7 @@
 INDIR=$(dirname $0)
 OUTDIR=$(realpath $INDIR/../man)
 mkdir -p $OUTDIR
+txt2man -d "31 Dec 2017" -t 2flac -r 2flac-1.0 -s 1 -v "Ryan's Tools" $INDIR/2flac > $OUTDIR/2flac.1
 txt2man -d "19 Dec 2015" -t ripcd -r ripcd-1.0 -s 1 -v "Ryan's Tools" $INDIR/ripcd > $OUTDIR/ripcd.1
 txt2man -d "02 Oct 2016" -t ripencflac -r ripencflac-1.0 -s 1 -v "Ryan's Tools" $INDIR/ripencflac > $OUTDIR/ripencflac.1
 txt2man -d "15 Feb 2014" -t ripencgame -r ripencgame-1.0 -s 1 -v "Ryan's Tools" $INDIR/ripencgame > $OUTDIR/ripencgame.1
